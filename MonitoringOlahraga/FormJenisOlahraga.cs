@@ -34,7 +34,53 @@ namespace MonitoringOlahraga
 
         private void btnInsert_Click(object sender, EventArgs e)
         {
-           
+            try
+            {
+                if (conn.State == ConnectionState.Closed)
+                {
+                    conn.Open();
+                }
+
+                if (string.IsNullOrEmpty(txtNamaOlahraga.Text))
+                {
+                    MessageBox.Show("Nama Olahraga harus diisi");
+                    txtNamaOlahraga.Focus();
+                    return;
+                }
+                if (string.IsNullOrEmpty(txtKalori.Text))
+                {
+                    MessageBox.Show("Kalori per menit harus diisi");
+                    txtKalori.Focus();
+                    return;
+                }
+
+                // id_jenis adalah IDENTITY, tidak perlu diisi manual
+                string query = @"INSERT INTO JenisOlahraga 
+                                (nama_olahraga, kalori_per_menit) 
+                                VALUES 
+                                (@nama_olahraga, @kalori_per_menit)";
+
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@nama_olahraga", txtNamaOlahraga.Text);
+                cmd.Parameters.AddWithValue("@kalori_per_menit", txtKalori.Text);
+
+                int result = cmd.ExecuteNonQuery();
+
+                if (result > 0)
+                {
+                    MessageBox.Show("Data jenis olahraga berhasil ditambahkan");
+                    ClearForm();
+                    btnLoad.PerformClick();
+                }
+                else
+                {
+                    MessageBox.Show("Data gagal ditambahkan");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Terjadi kesalahan: " + ex.Message);
+            }
         }
 
         private void btnUpdate_Click(object sender, EventArgs e)
