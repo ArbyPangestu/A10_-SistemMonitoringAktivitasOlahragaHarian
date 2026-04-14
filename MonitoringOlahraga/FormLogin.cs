@@ -96,6 +96,8 @@ namespace MonitoringOlahraga
 
         private void btnRegister_Click(object sender, EventArgs e)
         {
+            FormRegister frmRegister = new FormRegister();
+            frmRegister.ShowDialog();
         }
 
         private void txtPassword_KeyDown(object sender, KeyEventArgs e)
