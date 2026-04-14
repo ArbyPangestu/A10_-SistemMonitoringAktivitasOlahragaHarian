@@ -30,7 +30,46 @@ namespace MonitoringOlahraga
 
         private void btnLoad_Click(object sender, EventArgs e)
         {
-           
+            try
+            {
+                if (conn.State == ConnectionState.Closed)
+                {
+                    conn.Open();
+                }
+
+                dataGridView1.Rows.Clear();
+                dataGridView1.Columns.Clear();
+
+                dataGridView1.Columns.Add("id_user", "ID User");
+                dataGridView1.Columns.Add("nama", "Nama");
+                dataGridView1.Columns.Add("username", "Username");
+                dataGridView1.Columns.Add("email", "Email");
+                dataGridView1.Columns.Add("password", "Password");
+                dataGridView1.Columns.Add("role", "Role");
+
+                string query = "SELECT * FROM [User]";
+
+                SqlCommand cmd = new SqlCommand(query, conn);
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    dataGridView1.Rows.Add(
+                        reader["id_user"].ToString(),
+                        reader["nama"].ToString(),
+                        reader["username"].ToString(),
+                        reader["email"].ToString(),
+                        reader["password"].ToString(),
+                        reader["role"].ToString()
+                    );
+                }
+
+                reader.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Gagal menampilkan data: " + ex.Message);
+            }
         }
 
         private void btnInsert_Click(object sender, EventArgs e)
