@@ -42,7 +42,56 @@ namespace MonitoringOlahraga
 
         private void btnLogin_Click(object sender, EventArgs e)
         {
-            
+            if (string.IsNullOrEmpty(txtUsername.Text))
+            {
+                MessageBox.Show("Username harus diisi!", "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtUsername.Focus();
+                return;
+            }
+            if (string.IsNullOrEmpty(txtPassword.Text))
+            {
+                MessageBox.Show("Password harus diisi!", "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtPassword.Focus();
+                return;
+            }
+
+            try
+            {
+                if (conn.State == ConnectionState.Closed)
+                    conn.Open();
+
+                string query = "SELECT * FROM [User] WHERE username = @username AND password = @password";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@username", txtUsername.Text);
+                cmd.Parameters.AddWithValue("@password", txtPassword.Text);
+
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                if (reader.Read())
+                {
+                    string namaUser = reader["nama"].ToString();
+                    reader.Close();
+                    conn.Close();
+
+                    MessageBox.Show("Login berhasil! Selamat datang, " + namaUser + ".", "Berhasil", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    Form1 dashboard = new Form1();
+                    dashboard.Show();
+                    this.Hide();
+                    dashboard.FormClosed += (s, args) => this.Close();
+                }
+                else
+                {
+                    reader.Close();
+                    MessageBox.Show("Username atau password salah!", "Login Gagal", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    txtPassword.Clear();
+                    txtPassword.Focus();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Terjadi kesalahan: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void btnRegister_Click(object sender, EventArgs e)
