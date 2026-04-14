@@ -23,6 +23,44 @@ namespace MonitoringOlahraga
             conn = new SqlConnection(connectionString);
         }
 
-       
+        private void btnConnect_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (conn.State == System.Data.ConnectionState.Open)
+                    conn.Close();
+
+                conn.Open();
+                MessageBox.Show("Koneksi database berhasil!", "Koneksi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                conn.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Koneksi gagal: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnLogin_Click(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void btnRegister_Click(object sender, EventArgs e)
+        {
+        }
+
+        private void txtPassword_KeyDown(object sender, KeyEventArgs e)
+        {
+        }
+
+        private void txtUsername_KeyDown(object sender, KeyEventArgs e)
+        {
+            
+        }
+
+        private void pnlLeft_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
     }
 }
