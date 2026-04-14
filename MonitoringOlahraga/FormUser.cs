@@ -35,7 +35,56 @@ namespace MonitoringOlahraga
 
         private void btnInsert_Click(object sender, EventArgs e)
         {
-           
+            try
+            {
+                if (conn.State == ConnectionState.Closed)
+                {
+                    conn.Open();
+                }
+
+                if (string.IsNullOrEmpty(txtNama.Text))
+                {
+                    MessageBox.Show("Nama harus diisi");
+                    txtNama.Focus();
+                    return;
+                }
+                if (string.IsNullOrEmpty(cmbRole.Text))
+                {
+                    MessageBox.Show("Role harus dipilih");
+                    cmbRole.Focus();
+                    return;
+                }
+
+                // id_user adalah IDENTITY, tidak perlu diisi manual
+                string query = @"INSERT INTO [User] 
+                                (nama, username, email, password, role) 
+                                VALUES 
+                                (@nama, @username, @email, @password, @role)";
+
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@nama", txtNama.Text);
+                cmd.Parameters.AddWithValue("@username", txtUsername.Text);
+                cmd.Parameters.AddWithValue("@email", txtEmail.Text);
+                cmd.Parameters.AddWithValue("@password", txtPassword.Text);
+                cmd.Parameters.AddWithValue("@role", cmbRole.Text);
+
+                int result = cmd.ExecuteNonQuery();
+
+                if (result > 0)
+                {
+                    MessageBox.Show("Data user berhasil ditambahkan");
+                    ClearForm();
+                    btnLoad.PerformClick();
+                }
+                else
+                {
+                    MessageBox.Show("Data gagal ditambahkan");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Terjadi kesalahan: " + ex.Message);
+            }
         }
 
         private void btnUpdate_Click(object sender, EventArgs e)
