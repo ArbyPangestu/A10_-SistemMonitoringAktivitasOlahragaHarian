@@ -49,7 +49,49 @@ namespace MonitoringOlahraga
 
         private void btnInsert_Click(object sender, EventArgs e)
         {
-            
+            try
+            {
+                if (conn.State == ConnectionState.Closed)
+                {
+                    conn.Open();
+                }
+
+                if (string.IsNullOrEmpty(txtIdUser.Text))
+                {
+                    MessageBox.Show("ID User harus diisi");
+                    txtIdUser.Focus();
+                    return;
+                }
+
+                // id_laporan adalah IDENTITY, tidak perlu diisi manual
+                string query = @"INSERT INTO Laporan 
+                                (id_user, periode_awal, periode_akhir, total_keseluruhan_kalori) 
+                                VALUES 
+                                (@id_user, @periode_awal, @periode_akhir, @total_kalori)";
+
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@id_user", txtIdUser.Text);
+                cmd.Parameters.AddWithValue("@periode_awal", dtpAwal.Value.Date);
+                cmd.Parameters.AddWithValue("@periode_akhir", dtpAkhir.Value.Date);
+                cmd.Parameters.AddWithValue("@total_kalori", txtTotalKalori.Text);
+
+                int result = cmd.ExecuteNonQuery();
+
+                if (result > 0)
+                {
+                    MessageBox.Show("Data laporan berhasil ditambahkan");
+                    ClearForm();
+                    btnLoad.PerformClick();
+                }
+                else
+                {
+                    MessageBox.Show("Data gagal ditambahkan");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Terjadi kesalahan: " + ex.Message);
+            }
         }
 
         private void btnUpdate_Click(object sender, EventArgs e)
