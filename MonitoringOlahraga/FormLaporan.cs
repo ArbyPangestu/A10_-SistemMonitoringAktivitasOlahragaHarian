@@ -44,7 +44,44 @@ namespace MonitoringOlahraga
 
         private void btnLoad_Click(object sender, EventArgs e)
         {
-           
+            try
+            {
+                if (conn.State == ConnectionState.Closed)
+                {
+                    conn.Open();
+                }
+
+                dataGridView1.Rows.Clear();
+                dataGridView1.Columns.Clear();
+
+                dataGridView1.Columns.Add("id_laporan", "ID Laporan");
+                dataGridView1.Columns.Add("id_user", "ID User");
+                dataGridView1.Columns.Add("periode_awal", "Periode Awal");
+                dataGridView1.Columns.Add("periode_akhir", "Periode Akhir");
+                dataGridView1.Columns.Add("total_keseluruhan_kalori", "Total Kalori");
+
+                string query = "SELECT * FROM Laporan";
+
+                SqlCommand cmd = new SqlCommand(query, conn);
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    dataGridView1.Rows.Add(
+                        reader["id_laporan"].ToString(),
+                        reader["id_user"].ToString(),
+                        Convert.ToDateTime(reader["periode_awal"]).ToShortDateString(),
+                        Convert.ToDateTime(reader["periode_akhir"]).ToShortDateString(),
+                        reader["total_keseluruhan_kalori"].ToString()
+                    );
+                }
+
+                reader.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Gagal menampilkan data: " + ex.Message);
+            }
         }
 
         private void btnInsert_Click(object sender, EventArgs e)
