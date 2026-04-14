@@ -108,7 +108,8 @@ namespace MonitoringOlahraga
 
         private void txtUsername_KeyDown(object sender, KeyEventArgs e)
         {
-            
+            if (e.KeyCode == Keys.Enter)
+                txtPassword.Focus();
         }
 
         private void pnlLeft_Paint(object sender, PaintEventArgs e)
