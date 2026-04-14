@@ -54,7 +54,45 @@ namespace MonitoringOlahraga
 
         private void btnUpdate_Click(object sender, EventArgs e)
         {
-            
+            try
+            {
+                if (conn.State == ConnectionState.Closed)
+                {
+                    conn.Open();
+                }
+
+                string query = @"UPDATE Laporan 
+                        SET id_user = @id_user, 
+                            periode_awal = @periode_awal, 
+                            periode_akhir = @periode_akhir, 
+                            total_keseluruhan_kalori = @total_kalori 
+                        WHERE id_laporan = @id_laporan";
+
+                SqlCommand cmd = new SqlCommand(query, conn);
+
+                cmd.Parameters.AddWithValue("@id_laporan", txtIdLaporan.Text);
+                cmd.Parameters.AddWithValue("@id_user", txtIdUser.Text);
+                cmd.Parameters.AddWithValue("@periode_awal", dtpAwal.Value.Date);
+                cmd.Parameters.AddWithValue("@periode_akhir", dtpAkhir.Value.Date);
+                cmd.Parameters.AddWithValue("@total_kalori", txtTotalKalori.Text);
+
+                int result = cmd.ExecuteNonQuery();
+
+                if (result > 0)
+                {
+                    MessageBox.Show("Data berhasil diupdate");
+                    ClearForm();
+                    btnLoad.PerformClick();
+                }
+                else
+                {
+                    MessageBox.Show("Data tidak ditemukan");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Terjadi kesalahan: " + ex.Message);
+            }
         }
 
         private void btnDelete_Click(object sender, EventArgs e)
