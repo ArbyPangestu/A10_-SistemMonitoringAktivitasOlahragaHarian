@@ -39,7 +39,41 @@ namespace MonitoringOlahraga
 
         private void btnUpdate_Click(object sender, EventArgs e)
         {
-           
+            try
+            {
+                if (conn.State == ConnectionState.Closed)
+                {
+                    conn.Open();
+                }
+
+                string query = @"UPDATE JenisOlahraga 
+                        SET nama_olahraga = @nama_olahraga, 
+                            kalori_per_menit = @kalori_per_menit 
+                        WHERE id_jenis = @id_jenis";
+
+                SqlCommand cmd = new SqlCommand(query, conn);
+
+                cmd.Parameters.AddWithValue("@id_jenis", txtIdJenis.Text);
+                cmd.Parameters.AddWithValue("@nama_olahraga", txtNamaOlahraga.Text);
+                cmd.Parameters.AddWithValue("@kalori_per_menit", txtKalori.Text);
+
+                int result = cmd.ExecuteNonQuery();
+
+                if (result > 0)
+                {
+                    MessageBox.Show("Data berhasil diupdate");
+                    ClearForm();
+                    btnLoad.PerformClick();
+                }
+                else
+                {
+                    MessageBox.Show("Data tidak ditemukan");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Terjadi kesalahan: " + ex.Message);
+            }
         }
 
         private void btnDelete_Click(object sender, EventArgs e)
