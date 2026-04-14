@@ -25,7 +25,24 @@ namespace MonitoringOlahraga
 
         private void FormUser_Load(object sender, EventArgs e)
         {
-            
+            cmbRole.Items.Clear();
+            cmbRole.Items.Add("Admin");
+            cmbRole.Items.Add("User");
+
+            dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dataGridView1.MultiSelect = false;
+            dataGridView1.ReadOnly = true;
+            dataGridView1.AllowUserToAddRows = false;
+            dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
+            dataGridView1.CellClick += dataGridView1_CellClick;
+
+            // ID diisi otomatis (IDENTITY), hanya tampil read-only
+            txtIdUser.ReadOnly = true;
+            txtIdUser.BackColor = System.Drawing.Color.LightGray;
+
+            // Auto-load data saat form dibuka
+            btnLoad.PerformClick();
         }
 
         private void btnLoad_Click(object sender, EventArgs e)
