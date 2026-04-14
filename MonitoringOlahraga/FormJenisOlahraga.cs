@@ -25,11 +25,58 @@ namespace MonitoringOlahraga
 
         private void FormJenisOlahraga_Load(object sender, EventArgs e)
         {
+            dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dataGridView1.MultiSelect = false;
+            dataGridView1.ReadOnly = true;
+            dataGridView1.AllowUserToAddRows = false;
+            dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
+            dataGridView1.CellClick += dataGridView1_CellClick;
+
+            // ID diisi otomatis (IDENTITY), hanya tampil read-only
+            txtIdJenis.ReadOnly = true;
+            txtIdJenis.BackColor = System.Drawing.Color.LightGray;
+
+            // Auto-load data saat form dibuka
+            btnLoad.PerformClick();
         }
 
         private void btnLoad_Click(object sender, EventArgs e)
         {
-          
+            try
+            {
+                if (conn.State == ConnectionState.Closed)
+                {
+                    conn.Open();
+                }
+
+                dataGridView1.Rows.Clear();
+                dataGridView1.Columns.Clear();
+
+                dataGridView1.Columns.Add("id_jenis", "ID Jenis");
+                dataGridView1.Columns.Add("nama_olahraga", "Nama Olahraga");
+                dataGridView1.Columns.Add("kalori_per_menit", "Kalori / Menit");
+
+                string query = "SELECT * FROM JenisOlahraga";
+
+                SqlCommand cmd = new SqlCommand(query, conn);
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    dataGridView1.Rows.Add(
+                        reader["id_jenis"].ToString(),
+                        reader["nama_olahraga"].ToString(),
+                        reader["kalori_per_menit"].ToString()
+                    );
+                }
+
+                reader.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Gagal menampilkan data: " + ex.Message);
+            }
         }
 
         private void btnInsert_Click(object sender, EventArgs e)
