@@ -60,10 +60,10 @@ namespace MonitoringOlahraga
                 if (conn.State == ConnectionState.Closed)
                     conn.Open();
 
-                string query = "SELECT * FROM [User] WHERE username = @username AND password = @password";
+                // DEMO SQL INJECTION (Tugas Kriteria 3)
+                // Menggunakan string concatenation agar rentan terhadap SQL Injection
+                string query = "SELECT * FROM [User] WHERE username = '" + txtUsername.Text + "' AND password = '" + txtPassword.Text + "'";
                 SqlCommand cmd = new SqlCommand(query, conn);
-                cmd.Parameters.AddWithValue("@username", txtUsername.Text);
-                cmd.Parameters.AddWithValue("@password", txtPassword.Text);
 
                 SqlDataReader reader = cmd.ExecuteReader();
 

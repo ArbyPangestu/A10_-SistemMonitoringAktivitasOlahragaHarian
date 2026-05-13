@@ -1,243 +1,94 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.Data.SqlClient;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace MonitoringOlahraga
 {
     public partial class FormLaporan : Form
     {
-        private readonly SqlConnection conn;
-        private readonly string connectionString =
-            "Data Source=LAPTOP-MQ6MDQFG\\ARBYPANGESTU;Initial Catalog=DB_MonitoringOlahraga;Integrated Security=True";
+        private readonly string connectionString = "Data Source=LAPTOP-MQ6MDQFG\\ARBYPANGESTU;Initial Catalog=DB_MonitoringOlahraga;Integrated Security=True";
 
         public FormLaporan()
         {
             InitializeComponent();
-            conn = new SqlConnection(connectionString);
         }
 
         private void FormLaporan_Load(object sender, EventArgs e)
         {
-            dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dataGridView1.MultiSelect = false;
-            dataGridView1.ReadOnly = true;
-            dataGridView1.AllowUserToAddRows = false;
-            dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            // Set agar Grid hanya bisa dilihat (Validasi Revisi)
+            dataGridView2.ReadOnly = true;
+            dataGridView2.AllowUserToAddRows = false;
+            dataGridView2.AllowUserToDeleteRows = false;
+            dataGridView2.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dataGridView2.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
 
-            dataGridView1.CellClick += dataGridView1_CellClick;
-
-            // ID diisi otomatis (IDENTITY), hanya tampil read-only
-            txtIdLaporan.ReadOnly = true;
-            txtIdLaporan.BackColor = System.Drawing.Color.LightGray;
-
-            // Auto-load data saat form dibuka
-            btnLoad.PerformClick();
+            LoadData();
         }
 
-
-        private void btnLoad_Click(object sender, EventArgs e)
+        private void LoadData()
         {
             try
             {
-                if (conn.State == ConnectionState.Closed)
+                // Query untuk mengambil data laporan dari View
+                string query = "SELECT id_laporan, nama_user, periode_awal, periode_akhir, total_keseluruhan_kalori, tanggal_dibuat FROM vw_DataLaporan ORDER BY tanggal_dibuat DESC";
+
+                DataTable dt = new DataTable();
+                using (SqlConnection conn = new SqlConnection(connectionString))
                 {
-                    conn.Open();
+                    SqlDataAdapter da = new SqlDataAdapter(query, conn);
+                    da.Fill(dt);
                 }
 
-                dataGridView1.Rows.Clear();
-                dataGridView1.Columns.Clear();
+                // Pengaturan DataGridView
+                dataGridView2.AutoGenerateColumns = true;
+                dataGridView2.DataSource = dt;
 
-                dataGridView1.Columns.Add("id_laporan", "ID Laporan");
-                dataGridView1.Columns.Add("id_user", "ID User");
-                dataGridView1.Columns.Add("periode_awal", "Periode Awal");
-                dataGridView1.Columns.Add("periode_akhir", "Periode Akhir");
-                dataGridView1.Columns.Add("total_keseluruhan_kalori", "Total Kalori");
+                // Styling Premium
+                dataGridView2.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(245, 245, 245);
+                dataGridView2.DefaultCellStyle.SelectionBackColor = Color.FromArgb(70, 130, 180);
+                dataGridView2.DefaultCellStyle.SelectionForeColor = Color.White;
+                dataGridView2.RowHeadersVisible = false;
+                dataGridView2.ColumnHeadersVisible = true;
 
-                string query = "SELECT * FROM Laporan";
+                // Sembunyikan kolom ID
+                if (dataGridView2.Columns["id_laporan"] != null) dataGridView2.Columns["id_laporan"].Visible = false;
+                if (dataGridView2.Columns["id_user"] != null) dataGridView2.Columns["id_user"].Visible = false;
 
-                SqlCommand cmd = new SqlCommand(query, conn);
-                SqlDataReader reader = cmd.ExecuteReader();
-
-                while (reader.Read())
+                // Merapikan nama header dan format data
+                if (dataGridView2.Columns["periode_awal"] != null)
                 {
-                    dataGridView1.Rows.Add(
-                        reader["id_laporan"].ToString(),
-                        reader["id_user"].ToString(),
-                        Convert.ToDateTime(reader["periode_awal"]).ToShortDateString(),
-                        Convert.ToDateTime(reader["periode_akhir"]).ToShortDateString(),
-                        reader["total_keseluruhan_kalori"].ToString()
-                    );
+                    dataGridView2.Columns["periode_awal"].HeaderText = "Periode Awal";
+                    dataGridView2.Columns["periode_awal"].DefaultCellStyle.Format = "dd/MM/yyyy";
+                }
+                if (dataGridView2.Columns["periode_akhir"] != null)
+                {
+                    dataGridView2.Columns["periode_akhir"].HeaderText = "Periode Akhir";
+                    dataGridView2.Columns["periode_akhir"].DefaultCellStyle.Format = "dd/MM/yyyy";
+                }
+                if (dataGridView2.Columns["total_keseluruhan_kalori"] != null)
+                {
+                    dataGridView2.Columns["total_keseluruhan_kalori"].HeaderText = "Total Kalori";
+                    dataGridView2.Columns["total_keseluruhan_kalori"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+                }
+                if (dataGridView2.Columns["tanggal_dibuat"] != null)
+                {
+                    dataGridView2.Columns["tanggal_dibuat"].HeaderText = "Tanggal Dibuat";
+                    dataGridView2.Columns["tanggal_dibuat"].DefaultCellStyle.Format = "dd/MM/yyyy HH:mm";
                 }
 
-                reader.Close();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Gagal menampilkan data: " + ex.Message);
-            }
-        }
+                dataGridView2.Refresh();
 
-        private void btnInsert_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                if (conn.State == ConnectionState.Closed)
+                if (dt.Rows.Count == 0)
                 {
-                    conn.Open();
-                }
-
-                if (string.IsNullOrEmpty(txtIdUser.Text))
-                {
-                    MessageBox.Show("ID User harus diisi");
-                    txtIdUser.Focus();
-                    return;
-                }
-
-                // id_laporan adalah IDENTITY, tidak perlu diisi manual
-                string query = @"INSERT INTO Laporan 
-                                (id_user, periode_awal, periode_akhir, total_keseluruhan_kalori) 
-                                VALUES 
-                                (@id_user, @periode_awal, @periode_akhir, @total_kalori)";
-
-                SqlCommand cmd = new SqlCommand(query, conn);
-                cmd.Parameters.AddWithValue("@id_user", txtIdUser.Text);
-                cmd.Parameters.AddWithValue("@periode_awal", dtpAwal.Value.Date);
-                cmd.Parameters.AddWithValue("@periode_akhir", dtpAkhir.Value.Date);
-                cmd.Parameters.AddWithValue("@total_kalori", txtTotalKalori.Text);
-
-                int result = cmd.ExecuteNonQuery();
-
-                if (result > 0)
-                {
-                    MessageBox.Show("Data laporan berhasil ditambahkan");
-                    ClearForm();
-                    btnLoad.PerformClick();
-                }
-                else
-                {
-                    MessageBox.Show("Data gagal ditambahkan");
+                    MessageBox.Show("Tidak ada data laporan yang tersedia.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Terjadi kesalahan: " + ex.Message);
+                MessageBox.Show("Gagal memuat laporan: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
-
-        private void btnUpdate_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                if (conn.State == ConnectionState.Closed)
-                {
-                    conn.Open();
-                }
-
-                string query = @"UPDATE Laporan 
-                        SET id_user = @id_user, 
-                            periode_awal = @periode_awal, 
-                            periode_akhir = @periode_akhir, 
-                            total_keseluruhan_kalori = @total_kalori 
-                        WHERE id_laporan = @id_laporan";
-
-                SqlCommand cmd = new SqlCommand(query, conn);
-
-                cmd.Parameters.AddWithValue("@id_laporan", txtIdLaporan.Text);
-                cmd.Parameters.AddWithValue("@id_user", txtIdUser.Text);
-                cmd.Parameters.AddWithValue("@periode_awal", dtpAwal.Value.Date);
-                cmd.Parameters.AddWithValue("@periode_akhir", dtpAkhir.Value.Date);
-                cmd.Parameters.AddWithValue("@total_kalori", txtTotalKalori.Text);
-
-                int result = cmd.ExecuteNonQuery();
-
-                if (result > 0)
-                {
-                    MessageBox.Show("Data berhasil diupdate");
-                    ClearForm();
-                    btnLoad.PerformClick();
-                }
-                else
-                {
-                    MessageBox.Show("Data tidak ditemukan");
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Terjadi kesalahan: " + ex.Message);
-            }
-        }
-
-        private void btnDelete_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                if (conn.State == ConnectionState.Closed)
-                {
-                    conn.Open();
-                }
-
-                DialogResult resultConfirm = MessageBox.Show(
-                    "Yakin ingin menghapus data?",
-                    "Konfirmasi",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Question);
-
-                if (resultConfirm == DialogResult.Yes)
-                {
-                    string query = "DELETE FROM Laporan WHERE id_laporan = @id_laporan";
-
-                    SqlCommand cmd = new SqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@id_laporan", txtIdLaporan.Text);
-
-                    int result = cmd.ExecuteNonQuery();
-
-                    if (result > 0)
-                    {
-                        MessageBox.Show("Data berhasil dihapus");
-                        ClearForm();
-                        btnLoad.PerformClick();
-                    }
-                    else
-                    {
-                        MessageBox.Show("Data tidak ditemukan");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Terjadi kesalahan: " + ex.Message);
-            }
-        }
-
-        private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.RowIndex >= 0)
-            {
-                DataGridViewRow row = dataGridView1.Rows[e.RowIndex];
-
-                txtIdLaporan.Text = row.Cells["id_laporan"].Value.ToString();
-                txtIdUser.Text = row.Cells["id_user"].Value.ToString();
-                dtpAwal.Value = Convert.ToDateTime(row.Cells["periode_awal"].Value);
-                dtpAkhir.Value = Convert.ToDateTime(row.Cells["periode_akhir"].Value);
-                txtTotalKalori.Text = row.Cells["total_keseluruhan_kalori"].Value.ToString();
-            }
-        }
-
-        private void ClearForm()
-        {
-            txtIdLaporan.Clear();
-            txtIdUser.Clear();
-            dtpAwal.Value = DateTime.Now;
-            dtpAkhir.Value = DateTime.Now;
-            txtTotalKalori.Clear();
-            txtIdUser.Focus();
         }
     }
 }

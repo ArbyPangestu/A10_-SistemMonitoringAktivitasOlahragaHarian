@@ -15,6 +15,7 @@ namespace MonitoringOlahraga
         public Form1()
         {
             InitializeComponent();
+            btnNavUser.Visible = false; // Hanya user yang bisa akses, sembunyikan manajemen user
         }
 
         private void btnNavActivity_Click(object sender, EventArgs e)
@@ -29,11 +30,7 @@ namespace MonitoringOlahraga
             frm.Show();
         }
 
-        private void btnNavSports_Click(object sender, EventArgs e)
-        {
-            FormJenisOlahraga frm = new FormJenisOlahraga();
-            frm.Show();
-        }
+
 
         private void btnNavReports_Click(object sender, EventArgs e)
         {
@@ -55,6 +52,11 @@ namespace MonitoringOlahraga
                 frmLogin.Show();
                 this.Close();
             }
+        }
+
+        private void pnlMain_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
 }

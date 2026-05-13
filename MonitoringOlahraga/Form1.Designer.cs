@@ -1,3 +1,6 @@
+using System.Windows.Forms;
+using System.Drawing;
+
 namespace MonitoringOlahraga
 {
     partial class Form1
@@ -32,7 +35,6 @@ namespace MonitoringOlahraga
             this.lblTitle = new System.Windows.Forms.Label();
             this.btnNavActivity = new System.Windows.Forms.Button();
             this.btnNavUser = new System.Windows.Forms.Button();
-            this.btnNavSports = new System.Windows.Forms.Button();
             this.btnNavReports = new System.Windows.Forms.Button();
             this.btnLogout = new System.Windows.Forms.Button();
             this.pnlMain = new System.Windows.Forms.Panel();
@@ -47,7 +49,6 @@ namespace MonitoringOlahraga
             this.pnlSidebar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(48)))));
             this.pnlSidebar.Controls.Add(this.btnLogout);
             this.pnlSidebar.Controls.Add(this.btnNavReports);
-            this.pnlSidebar.Controls.Add(this.btnNavSports);
             this.pnlSidebar.Controls.Add(this.btnNavUser);
             this.pnlSidebar.Controls.Add(this.btnNavActivity);
             this.pnlSidebar.Controls.Add(this.lblTitle);
@@ -99,22 +100,7 @@ namespace MonitoringOlahraga
             this.btnNavUser.Padding = new System.Windows.Forms.Padding(15, 0, 0, 0);
             this.btnNavUser.UseVisualStyleBackColor = true;
             this.btnNavUser.Click += new System.EventHandler(this.btnNavUser_Click);
-            // 
-            // btnNavSports
-            // 
-            this.btnNavSports.FlatAppearance.BorderSize = 0;
-            this.btnNavSports.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnNavSports.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btnNavSports.ForeColor = System.Drawing.Color.LightGray;
-            this.btnNavSports.Location = new System.Drawing.Point(0, 180);
-            this.btnNavSports.Name = "btnNavSports";
-            this.btnNavSports.Size = new System.Drawing.Size(200, 40);
-            this.btnNavSports.TabIndex = 3;
-            this.btnNavSports.Text = "Jenis Olahraga";
-            this.btnNavSports.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnNavSports.Padding = new System.Windows.Forms.Padding(15, 0, 0, 0);
-            this.btnNavSports.UseVisualStyleBackColor = true;
-            this.btnNavSports.Click += new System.EventHandler(this.btnNavSports_Click);
+
             // 
             // btnNavReports
             // 
@@ -122,7 +108,7 @@ namespace MonitoringOlahraga
             this.btnNavReports.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnNavReports.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.btnNavReports.ForeColor = System.Drawing.Color.LightGray;
-            this.btnNavReports.Location = new System.Drawing.Point(0, 220);
+            this.btnNavReports.Location = new System.Drawing.Point(0, 180);
             this.btnNavReports.Name = "btnNavReports";
             this.btnNavReports.Size = new System.Drawing.Size(200, 40);
             this.btnNavReports.TabIndex = 4;
@@ -206,7 +192,6 @@ namespace MonitoringOlahraga
         private System.Windows.Forms.Label lblTitle;
         private System.Windows.Forms.Button btnNavActivity;
         private System.Windows.Forms.Button btnNavUser;
-        private System.Windows.Forms.Button btnNavSports;
         private System.Windows.Forms.Button btnNavReports;
         private System.Windows.Forms.Button btnLogout;
         private System.Windows.Forms.Panel pnlMain;

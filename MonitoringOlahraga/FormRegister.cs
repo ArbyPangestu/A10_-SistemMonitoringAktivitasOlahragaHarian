@@ -25,7 +25,7 @@ namespace MonitoringOlahraga
 
         private void btnRegister_Click(object sender, EventArgs e)
         {
-            // Validasi input
+           
             if (string.IsNullOrEmpty(txtNama.Text))
             {
                 MessageBox.Show("Nama harus diisi!", "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -63,7 +63,7 @@ namespace MonitoringOlahraga
                 if (conn.State == ConnectionState.Closed)
                     conn.Open();
 
-                // Cek apakah username sudah ada
+              
                 string checkQuery = "SELECT COUNT(*) FROM [User] WHERE username = @username";
                 SqlCommand checkCmd = new SqlCommand(checkQuery, conn);
                 checkCmd.Parameters.AddWithValue("@username", txtUsername.Text);
@@ -76,7 +76,7 @@ namespace MonitoringOlahraga
                     return;
                 }
 
-                // Insert user baru dengan role 'User' (id_user adalah IDENTITY, tidak perlu diisi)
+                
                 string insertQuery = @"INSERT INTO [User] (nama, username, email, password, role) 
                                        VALUES (@nama, @username, @email, @password, @role)";
                 SqlCommand insertCmd = new SqlCommand(insertQuery, conn);
@@ -104,6 +104,11 @@ namespace MonitoringOlahraga
         private void btnCancel_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void pnlRight_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
 }

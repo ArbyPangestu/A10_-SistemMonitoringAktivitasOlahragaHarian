@@ -13,6 +13,7 @@ namespace MonitoringOlahraga
 {
     public partial class FormUser : Form
     {
+        private int _selectedIdUser = 0;
         private readonly SqlConnection conn;
         private readonly string connectionString =
             "Data Source=LAPTOP-MQ6MDQFG\\ARBYPANGESTU;Initial Catalog=DB_MonitoringOlahraga;Integrated Security=True";
@@ -37,11 +38,7 @@ namespace MonitoringOlahraga
 
             dataGridView1.CellClick += dataGridView1_CellClick;
 
-            // ID diisi otomatis (IDENTITY), hanya tampil read-only
-            txtIdUser.ReadOnly = true;
-            txtIdUser.BackColor = System.Drawing.Color.LightGray;
-
-            // Auto-load data saat form dibuka
+           
             btnLoad.PerformClick();
         }
 
@@ -49,39 +46,21 @@ namespace MonitoringOlahraga
         {
             try
             {
-                if (conn.State == ConnectionState.Closed)
-                {
-                    conn.Open();
-                }
-
-                dataGridView1.Rows.Clear();
-                dataGridView1.Columns.Clear();
-
-                dataGridView1.Columns.Add("id_user", "ID User");
-                dataGridView1.Columns.Add("nama", "Nama");
-                dataGridView1.Columns.Add("username", "Username");
-                dataGridView1.Columns.Add("email", "Email");
-                dataGridView1.Columns.Add("password", "Password");
-                dataGridView1.Columns.Add("role", "Role");
-
                 string query = "SELECT * FROM [User]";
+                DataTable dt = new DataTable();
 
-                SqlCommand cmd = new SqlCommand(query, conn);
-                SqlDataReader reader = cmd.ExecuteReader();
-
-                while (reader.Read())
+                using (SqlDataAdapter da = new SqlDataAdapter(query, conn))
                 {
-                    dataGridView1.Rows.Add(
-                        reader["id_user"].ToString(),
-                        reader["nama"].ToString(),
-                        reader["username"].ToString(),
-                        reader["email"].ToString(),
-                        reader["password"].ToString(),
-                        reader["role"].ToString()
-                    );
+                    da.Fill(dt);
                 }
 
-                reader.Close();
+                BindingSource bs = new BindingSource();
+                bs.DataSource = dt;
+
+                dataGridView1.DataSource = bs;
+                bindingNavigator1.BindingSource = bs;
+
+                if (dataGridView1.Columns["id_user"] != null) dataGridView1.Columns["id_user"].Visible = false;
             }
             catch (Exception ex)
             {
@@ -111,18 +90,12 @@ namespace MonitoringOlahraga
                     return;
                 }
 
-                // id_user adalah IDENTITY, tidak perlu diisi manual
-                string query = @"INSERT INTO [User] 
-                                (nama, username, email, password, role) 
-                                VALUES 
-                                (@nama, @username, @email, @password, @role)";
-
-                SqlCommand cmd = new SqlCommand(query, conn);
+                SqlCommand cmd = new SqlCommand("sp_InsertUser", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
                 cmd.Parameters.AddWithValue("@nama", txtNama.Text);
                 cmd.Parameters.AddWithValue("@username", txtUsername.Text);
                 cmd.Parameters.AddWithValue("@email", txtEmail.Text);
                 cmd.Parameters.AddWithValue("@password", txtPassword.Text);
-                cmd.Parameters.AddWithValue("@role", cmbRole.Text);
 
                 int result = cmd.ExecuteNonQuery();
 
@@ -131,10 +104,6 @@ namespace MonitoringOlahraga
                     MessageBox.Show("Data user berhasil ditambahkan");
                     ClearForm();
                     btnLoad.PerformClick();
-                }
-                else
-                {
-                    MessageBox.Show("Data gagal ditambahkan");
                 }
             }
             catch (Exception ex)
@@ -152,22 +121,20 @@ namespace MonitoringOlahraga
                     conn.Open();
                 }
 
-                string query = @"UPDATE [User] 
-                        SET nama = @nama, 
-                            username = @username, 
-                            email = @email, 
-                            password = @password, 
-                            role = @role 
-                        WHERE id_user = @id_user";
+                if (_selectedIdUser == 0)
+                {
+                    MessageBox.Show("Pilih data dari tabel terlebih dahulu.");
+                    return;
+                }
 
-                SqlCommand cmd = new SqlCommand(query, conn);
+                SqlCommand cmd = new SqlCommand("sp_UpdateUser", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
 
-                cmd.Parameters.AddWithValue("@id_user", txtIdUser.Text);
+                cmd.Parameters.AddWithValue("@id_user", _selectedIdUser);
                 cmd.Parameters.AddWithValue("@nama", txtNama.Text);
                 cmd.Parameters.AddWithValue("@username", txtUsername.Text);
                 cmd.Parameters.AddWithValue("@email", txtEmail.Text);
                 cmd.Parameters.AddWithValue("@password", txtPassword.Text);
-                cmd.Parameters.AddWithValue("@role", cmbRole.Text);
 
                 int result = cmd.ExecuteNonQuery();
 
@@ -176,10 +143,6 @@ namespace MonitoringOlahraga
                     MessageBox.Show("Data berhasil diupdate");
                     ClearForm();
                     btnLoad.PerformClick();
-                }
-                else
-                {
-                    MessageBox.Show("Data tidak ditemukan");
                 }
             }
             catch (Exception ex)
@@ -197,6 +160,12 @@ namespace MonitoringOlahraga
                     conn.Open();
                 }
 
+                if (_selectedIdUser == 0)
+                {
+                    MessageBox.Show("Pilih data dari tabel terlebih dahulu.");
+                    return;
+                }
+
                 DialogResult resultConfirm = MessageBox.Show(
                     "Yakin ingin menghapus data?",
                     "Konfirmasi",
@@ -205,10 +174,9 @@ namespace MonitoringOlahraga
 
                 if (resultConfirm == DialogResult.Yes)
                 {
-                    string query = "DELETE FROM [User] WHERE id_user = @id_user";
-
-                    SqlCommand cmd = new SqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@id_user", txtIdUser.Text);
+                    SqlCommand cmd = new SqlCommand("sp_DeleteUser", conn);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@id_user", _selectedIdUser);
 
                     int result = cmd.ExecuteNonQuery();
 
@@ -217,10 +185,6 @@ namespace MonitoringOlahraga
                         MessageBox.Show("Data berhasil dihapus");
                         ClearForm();
                         btnLoad.PerformClick();
-                    }
-                    else
-                    {
-                        MessageBox.Show("Data tidak ditemukan");
                     }
                 }
             }
@@ -236,23 +200,21 @@ namespace MonitoringOlahraga
             {
                 DataGridViewRow row = dataGridView1.Rows[e.RowIndex];
 
-                txtIdUser.Text = row.Cells["id_user"].Value.ToString();
+                _selectedIdUser = Convert.ToInt32(row.Cells["id_user"].Value);
                 txtNama.Text = row.Cells["nama"].Value.ToString();
                 txtUsername.Text = row.Cells["username"].Value.ToString();
                 txtEmail.Text = row.Cells["email"].Value.ToString();
                 txtPassword.Text = row.Cells["password"].Value.ToString();
-                cmbRole.Text = row.Cells["role"].Value.ToString();
             }
         }
 
         private void ClearForm()
         {
-            txtIdUser.Clear();
+            _selectedIdUser = 0;
             txtNama.Clear();
             txtUsername.Clear();
             txtEmail.Clear();
             txtPassword.Clear();
-            cmbRole.SelectedIndex = -1;
             txtNama.Focus();
         }
     }

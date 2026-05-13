@@ -1,0 +1,39 @@
+# Monitoring Olahraga - Tugas PABD
+
+Proyek ini telah diperbarui untuk memenuhi kriteria tugas sebagai berikut:
+
+## 1. Stored Procedure (CRUD & Search)
+Semua operasi data pada `FormAktivitasOlahraga` menggunakan Stored Procedure:
+- **Insert**: `sp_InsertAktivitas` (Berisi logika perhitungan kalori otomatis di database).
+- **Update**: `sp_UpdateAktivitas`
+- **Delete**: `sp_DeleteAktivitas`
+- **Search**: `sp_SearchAktivitas` (Menggunakan parameter keyword untuk mencari nama olahraga).
+
+## 2. Database View
+Operasi pembacaan data (Select) menggunakan View:
+- **Aktivitas**: `vw_RiwayatAktivitas`
+- **Laporan**: `vw_DataLaporan` (Menggabungkan data user dan aktivitas).
+
+## 3. Konsep Data Binding & Binding Navigator
+- Menggunakan `BindingSource` dan `DataTable` untuk sinkronisasi data.
+- `BindingNavigator` diimplementasikan pada `FormAktivitasOlahraga` dan `FormUser` untuk navigasi record.
+
+## 4. Simulasi SQL Injection (Edukasi)
+Kami sengaja mengimplementasikan celah SQL Injection pada **FormLogin.cs** untuk tujuan demonstrasi.
+
+### Skenario SQL Injection:
+**Target**: Bypass autentikasi tanpa mengetahui username atau password yang benar.
+
+**Langkah-langkah:**
+1. Buka `FormLogin`.
+2. Pada field **Username**, masukkan nilai: `' OR '1'='1`
+3. Pada field **Password**, masukkan nilai sembarang (misal: `abc`).
+4. Klik **Login**.
+
+**Penjelasan Teknis:**
+Query di belakang layar berubah menjadi:
+`SELECT * FROM [User] WHERE username = '' OR '1'='1' AND password = 'abc'`
+Karena `'1'='1'` selalu bernilai **TRUE**, database akan mengembalikan record user pertama dan mengizinkan login meskipun password salah.
+
+---
+**PENTING**: Implementasi ini hanya untuk memenuhi kriteria tugas. Dalam aplikasi produksi, selalu gunakan **Parameterized Query** atau **Stored Procedure** untuk mencegah SQL Injection.

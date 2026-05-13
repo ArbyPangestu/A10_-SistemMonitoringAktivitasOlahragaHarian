@@ -13,6 +13,7 @@ namespace MonitoringOlahraga
 {
     public partial class FormAktivitasOlahraga : Form
     {
+        private int _selectedIdAktivitas = 0;
         private readonly SqlConnection conn;
         private readonly string connectionString =
             "Data Source=LAPTOP-MQ6MDQFG\\ARBYPANGESTU;Initial Catalog=DB_MonitoringOlahraga;Integrated Security=True";
@@ -33,11 +34,7 @@ namespace MonitoringOlahraga
 
             dataGridView1.CellClick += dataGridView1_CellClick;
 
-            // ID diisi otomatis (IDENTITY), hanya tampil read-only
-            txtIdAktivitas.ReadOnly = true;
-            txtIdAktivitas.BackColor = System.Drawing.Color.LightGray;
 
-            // Auto-load data saat form dibuka
             btnLoad.PerformClick();
         }
 
@@ -45,39 +42,23 @@ namespace MonitoringOlahraga
         {
             try
             {
-                if (conn.State == ConnectionState.Closed)
+                string query = "SELECT * FROM vw_RiwayatAktivitas";
+                DataTable dt = new DataTable();
+
+                using (SqlDataAdapter da = new SqlDataAdapter(query, conn))
                 {
-                    conn.Open();
+                    da.Fill(dt);
                 }
 
-                dataGridView1.Rows.Clear();
-                dataGridView1.Columns.Clear();
+                BindingSource bs = new BindingSource();
+                bs.DataSource = dt;
 
-                dataGridView1.Columns.Add("id_aktivitas", "ID Aktivitas");
-                dataGridView1.Columns.Add("id_user", "ID User");
-                dataGridView1.Columns.Add("id_jenis", "ID Jenis");
-                dataGridView1.Columns.Add("durasi_menit", "Durasi (Menit)");
-                dataGridView1.Columns.Add("tanggal", "Tanggal");
-                dataGridView1.Columns.Add("total_kalori", "Total Kalori");
+                dataGridView1.DataSource = bs;
+                bindingNavigator1.BindingSource = bs;
 
-                string query = "SELECT * FROM AktivitasOlahraga";
-
-                SqlCommand cmd = new SqlCommand(query, conn);
-                SqlDataReader reader = cmd.ExecuteReader();
-
-                while (reader.Read())
-                {
-                    dataGridView1.Rows.Add(
-                        reader["id_aktivitas"].ToString(),
-                        reader["id_user"].ToString(),
-                        reader["id_jenis"].ToString(),
-                        reader["durasi_menit"].ToString(),
-                        Convert.ToDateTime(reader["tanggal"]).ToShortDateString(),
-                        reader["total_kalori"].ToString()
-                    );
-                }
-
-                reader.Close();
+                // Sembunyikan kolom ID secara aman
+                if (dataGridView1.Columns["id_aktivitas"] != null) dataGridView1.Columns["id_aktivitas"].Visible = false;
+                if (dataGridView1.Columns["id_user"] != null) dataGridView1.Columns["id_user"].Visible = false;
             }
             catch (Exception ex)
             {
@@ -89,36 +70,23 @@ namespace MonitoringOlahraga
         {
             try
             {
-                if (conn.State == ConnectionState.Closed)
-                {
-                    conn.Open();
-                }
+                if (conn.State == ConnectionState.Closed) conn.Open();
 
-                if (string.IsNullOrEmpty(txtIdUser.Text))
+                if (string.IsNullOrEmpty(txtNamaOlahraga.Text))
                 {
-                    MessageBox.Show("ID User harus diisi");
-                    txtIdUser.Focus();
-                    return;
-                }
-                if (string.IsNullOrEmpty(txtIdJenis.Text))
-                {
-                    MessageBox.Show("ID Jenis harus diisi");
-                    txtIdJenis.Focus();
+                    MessageBox.Show("Nama Olahraga harus diisi");
+                    txtNamaOlahraga.Focus();
                     return;
                 }
 
-                // id_aktivitas adalah IDENTITY, tidak perlu diisi manual
-                string query = @"INSERT INTO AktivitasOlahraga 
-                                (id_user, id_jenis, durasi_menit, tanggal, total_kalori) 
-                                VALUES 
-                                (@id_user, @id_jenis, @durasi_menit, @tanggal, @total_kalori)";
+                SqlCommand cmd = new SqlCommand("sp_InsertAktivitas", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
 
-                SqlCommand cmd = new SqlCommand(query, conn);
-                cmd.Parameters.AddWithValue("@id_user", txtIdUser.Text);
-                cmd.Parameters.AddWithValue("@id_jenis", txtIdJenis.Text);
+                cmd.Parameters.AddWithValue("@id_user", 1);
+                cmd.Parameters.AddWithValue("@nama_olahraga", txtNamaOlahraga.Text);
+                cmd.Parameters.AddWithValue("@kalori_per_menit", txtKaloriPerMenit.Text);
                 cmd.Parameters.AddWithValue("@durasi_menit", txtDurasi.Text);
                 cmd.Parameters.AddWithValue("@tanggal", dtpTanggal.Value.Date);
-                cmd.Parameters.AddWithValue("@total_kalori", txtTotalKalori.Text);
 
                 int result = cmd.ExecuteNonQuery();
 
@@ -127,10 +95,6 @@ namespace MonitoringOlahraga
                     MessageBox.Show("Data aktivitas olahraga berhasil ditambahkan");
                     ClearForm();
                     btnLoad.PerformClick();
-                }
-                else
-                {
-                    MessageBox.Show("Data gagal ditambahkan");
                 }
             }
             catch (Exception ex)
@@ -143,27 +107,22 @@ namespace MonitoringOlahraga
         {
             try
             {
-                if (conn.State == ConnectionState.Closed)
+                if (conn.State == ConnectionState.Closed) conn.Open();
+
+                if (_selectedIdAktivitas == 0)
                 {
-                    conn.Open();
+                    MessageBox.Show("Pilih data dari tabel terlebih dahulu.");
+                    return;
                 }
 
-                string query = @"UPDATE AktivitasOlahraga 
-                        SET id_user = @id_user, 
-                            id_jenis = @id_jenis, 
-                            durasi_menit = @durasi_menit, 
-                            tanggal = @tanggal, 
-                            total_kalori = @total_kalori 
-                        WHERE id_aktivitas = @id_aktivitas";
+                SqlCommand cmd = new SqlCommand("sp_UpdateAktivitas", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
 
-                SqlCommand cmd = new SqlCommand(query, conn);
-
-                cmd.Parameters.AddWithValue("@id_aktivitas", txtIdAktivitas.Text);
-                cmd.Parameters.AddWithValue("@id_user", txtIdUser.Text);
-                cmd.Parameters.AddWithValue("@id_jenis", txtIdJenis.Text);
+                cmd.Parameters.AddWithValue("@id_aktivitas", _selectedIdAktivitas);
+                cmd.Parameters.AddWithValue("@nama_olahraga", txtNamaOlahraga.Text);
+                cmd.Parameters.AddWithValue("@kalori_per_menit", txtKaloriPerMenit.Text);
                 cmd.Parameters.AddWithValue("@durasi_menit", txtDurasi.Text);
                 cmd.Parameters.AddWithValue("@tanggal", dtpTanggal.Value.Date);
-                cmd.Parameters.AddWithValue("@total_kalori", txtTotalKalori.Text);
 
                 int result = cmd.ExecuteNonQuery();
 
@@ -172,10 +131,6 @@ namespace MonitoringOlahraga
                     MessageBox.Show("Data berhasil diupdate");
                     ClearForm();
                     btnLoad.PerformClick();
-                }
-                else
-                {
-                    MessageBox.Show("Data tidak ditemukan");
                 }
             }
             catch (Exception ex)
@@ -188,23 +143,19 @@ namespace MonitoringOlahraga
         {
             try
             {
-                if (conn.State == ConnectionState.Closed)
+                if (conn.State == ConnectionState.Closed) conn.Open();
+
+                if (_selectedIdAktivitas == 0)
                 {
-                    conn.Open();
+                    MessageBox.Show("Pilih data dari tabel terlebih dahulu.");
+                    return;
                 }
 
-                DialogResult resultConfirm = MessageBox.Show(
-                    "Yakin ingin menghapus data?",
-                    "Konfirmasi",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Question);
-
-                if (resultConfirm == DialogResult.Yes)
+                if (MessageBox.Show("Yakin ingin menghapus data?", "Konfirmasi", MessageBoxButtons.YesNo) == DialogResult.Yes)
                 {
-                    string query = "DELETE FROM AktivitasOlahraga WHERE id_aktivitas = @id_aktivitas";
-
-                    SqlCommand cmd = new SqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@id_aktivitas", txtIdAktivitas.Text);
+                    SqlCommand cmd = new SqlCommand("sp_DeleteAktivitas", conn);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@id_aktivitas", _selectedIdAktivitas);
 
                     int result = cmd.ExecuteNonQuery();
 
@@ -213,10 +164,6 @@ namespace MonitoringOlahraga
                         MessageBox.Show("Data berhasil dihapus");
                         ClearForm();
                         btnLoad.PerformClick();
-                    }
-                    else
-                    {
-                        MessageBox.Show("Data tidak ditemukan");
                     }
                 }
             }
@@ -232,24 +179,52 @@ namespace MonitoringOlahraga
             {
                 DataGridViewRow row = dataGridView1.Rows[e.RowIndex];
 
-                txtIdAktivitas.Text = row.Cells["id_aktivitas"].Value.ToString();
-                txtIdUser.Text = row.Cells["id_user"].Value.ToString();
-                txtIdJenis.Text = row.Cells["id_jenis"].Value.ToString();
+                _selectedIdAktivitas = Convert.ToInt32(row.Cells["id_aktivitas"].Value);
+                txtNamaOlahraga.Text = row.Cells["nama_olahraga"].Value.ToString();
+                txtKaloriPerMenit.Text = row.Cells["kalori_per_menit"].Value.ToString();
                 txtDurasi.Text = row.Cells["durasi_menit"].Value.ToString();
                 dtpTanggal.Value = Convert.ToDateTime(row.Cells["tanggal"].Value);
-                txtTotalKalori.Text = row.Cells["total_kalori"].Value.ToString();
             }
         }
 
         private void ClearForm()
         {
-            txtIdAktivitas.Clear();
-            txtIdUser.Clear();
-            txtIdJenis.Clear();
+            _selectedIdAktivitas = 0;
+            txtNamaOlahraga.Clear();
+            txtKaloriPerMenit.Clear();
             txtDurasi.Clear();
             dtpTanggal.Value = DateTime.Now;
-            txtTotalKalori.Clear();
-            txtIdUser.Focus();
+            txtNamaOlahraga.Focus();
+        }
+
+        private void btnSearch_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string query = "EXEC sp_SearchAktivitas @keyword";
+                DataTable dt = new DataTable();
+
+                using (SqlDataAdapter da = new SqlDataAdapter("sp_SearchAktivitas", conn))
+                {
+                    da.SelectCommand.CommandType = CommandType.StoredProcedure;
+                    da.SelectCommand.Parameters.AddWithValue("@keyword", txtSearch.Text);
+                    da.Fill(dt);
+                }
+
+                BindingSource bs = new BindingSource();
+                bs.DataSource = dt;
+                dataGridView1.DataSource = bs;
+                bindingNavigator1.BindingSource = bs;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Pencarian gagal: " + ex.Message);
+            }
+        }
+
+        private void bindingNavigator1_RefreshItems(object sender, EventArgs e)
+        {
+
         }
     }
 }
