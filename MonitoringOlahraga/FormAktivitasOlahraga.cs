@@ -201,7 +201,6 @@ namespace MonitoringOlahraga
         {
             try
             {
-                string query = "EXEC sp_SearchAktivitas @keyword";
                 DataTable dt = new DataTable();
 
                 using (SqlDataAdapter da = new SqlDataAdapter("sp_SearchAktivitas", conn))

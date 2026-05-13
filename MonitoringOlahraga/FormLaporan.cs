@@ -41,9 +41,11 @@ namespace MonitoringOlahraga
                     da.Fill(dt);
                 }
 
-                // Pengaturan DataGridView
-                dataGridView2.AutoGenerateColumns = true;
-                dataGridView2.DataSource = dt;
+                // Pengaturan DataGridView & Binding
+                BindingSource bs = new BindingSource();
+                bs.DataSource = dt;
+                dataGridView2.DataSource = bs;
+                bindingNavigator1.BindingSource = bs;
 
                 // Styling Premium
                 dataGridView2.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(245, 245, 245);
