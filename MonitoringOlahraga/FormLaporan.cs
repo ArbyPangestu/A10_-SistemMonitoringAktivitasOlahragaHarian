@@ -8,7 +8,7 @@ namespace MonitoringOlahraga
 {
     public partial class FormLaporan : Form
     {
-        private readonly string connectionString = "Data Source=LAPTOP-MQ6MDQFG\\ARBYPANGESTU;Initial Catalog=DB_MonitoringOlahraga;Integrated Security=True";
+        private readonly string connectionString = DatabaseHelper.GetConnectionString();
 
         public FormLaporan()
         {
@@ -23,6 +23,22 @@ namespace MonitoringOlahraga
             dataGridView2.AllowUserToDeleteRows = false;
             dataGridView2.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridView2.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
+            Button btnBukaCetakLaporan = new Button();
+            btnBukaCetakLaporan.Text = "Cetak Laporan";
+            btnBukaCetakLaporan.Size = new Size(120, 30);
+            btnBukaCetakLaporan.Location = new Point(650, 10);
+            btnBukaCetakLaporan.BackColor = Color.FromArgb(70, 130, 180);
+            btnBukaCetakLaporan.ForeColor = Color.White;
+            btnBukaCetakLaporan.FlatStyle = FlatStyle.Flat;
+            btnBukaCetakLaporan.FlatAppearance.BorderSize = 0;
+            btnBukaCetakLaporan.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            btnBukaCetakLaporan.Click += (s, args) => {
+                FormCetakLaporan frm = new FormCetakLaporan();
+                frm.ShowDialog();
+            };
+            this.Controls.Add(btnBukaCetakLaporan);
+            btnBukaCetakLaporan.BringToFront();
 
             LoadData();
         }

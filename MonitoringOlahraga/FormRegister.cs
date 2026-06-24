@@ -14,8 +14,7 @@ namespace MonitoringOlahraga
     public partial class FormRegister : Form
     {
         private readonly SqlConnection conn;
-        private readonly string connectionString =
-            "Data Source=LAPTOP-MQ6MDQFG\\ARBYPANGESTU;Initial Catalog=DB_MonitoringOlahraga;Integrated Security=True";
+        private readonly string connectionString = DatabaseHelper.GetConnectionString();
 
         public FormRegister()
         {
@@ -64,8 +63,8 @@ namespace MonitoringOlahraga
                     conn.Open();
 
               
-                string checkQuery = "SELECT COUNT(*) FROM [User] WHERE username = @username";
-                SqlCommand checkCmd = new SqlCommand(checkQuery, conn);
+                SqlCommand checkCmd = new SqlCommand("sp_CheckUsername", conn);
+                checkCmd.CommandType = CommandType.StoredProcedure;
                 checkCmd.Parameters.AddWithValue("@username", txtUsername.Text);
                 int count = (int)checkCmd.ExecuteScalar();
 
@@ -77,14 +76,12 @@ namespace MonitoringOlahraga
                 }
 
                 
-                string insertQuery = @"INSERT INTO [User] (nama, username, email, password, role) 
-                                       VALUES (@nama, @username, @email, @password, @role)";
-                SqlCommand insertCmd = new SqlCommand(insertQuery, conn);
+                SqlCommand insertCmd = new SqlCommand("sp_RegisterUser", conn);
+                insertCmd.CommandType = CommandType.StoredProcedure;
                 insertCmd.Parameters.AddWithValue("@nama", txtNama.Text);
                 insertCmd.Parameters.AddWithValue("@username", txtUsername.Text);
                 insertCmd.Parameters.AddWithValue("@email", txtEmail.Text);
                 insertCmd.Parameters.AddWithValue("@password", txtPassword.Text);
-                insertCmd.Parameters.AddWithValue("@role", "User");
 
                 int result = insertCmd.ExecuteNonQuery();
 

@@ -15,7 +15,6 @@ namespace MonitoringOlahraga
         public Form1()
         {
             InitializeComponent();
-            btnNavUser.Visible = false; // Hanya user yang bisa akses, sembunyikan manajemen user
         }
 
         private void btnNavActivity_Click(object sender, EventArgs e)
@@ -34,7 +33,7 @@ namespace MonitoringOlahraga
 
         private void btnNavReports_Click(object sender, EventArgs e)
         {
-            FormLaporan frm = new FormLaporan();
+            FormRekap frm = new FormRekap();
             frm.Show();
         }
 

@@ -15,8 +15,7 @@ namespace MonitoringOlahraga
     {
         private int _selectedIdUser = 0;
         private readonly SqlConnection conn;
-        private readonly string connectionString =
-            "Data Source=LAPTOP-MQ6MDQFG\\ARBYPANGESTU;Initial Catalog=DB_MonitoringOlahraga;Integrated Security=True";
+        private readonly string connectionString = DatabaseHelper.GetConnectionString();
 
         public FormUser()
         {
@@ -26,9 +25,7 @@ namespace MonitoringOlahraga
 
         private void FormUser_Load(object sender, EventArgs e)
         {
-            cmbRole.Items.Clear();
-            cmbRole.Items.Add("Admin");
-            cmbRole.Items.Add("User");
+            // cmbRole.Items.Add("User"); // Role removed for single user environment
 
             dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridView1.MultiSelect = false;
@@ -46,10 +43,11 @@ namespace MonitoringOlahraga
         {
             try
             {
-                string query = "SELECT * FROM [User]";
+                SqlCommand cmd = new SqlCommand("sp_GetAllUsers", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
                 DataTable dt = new DataTable();
 
-                using (SqlDataAdapter da = new SqlDataAdapter(query, conn))
+                using (SqlDataAdapter da = new SqlDataAdapter(cmd))
                 {
                     da.Fill(dt);
                 }
@@ -83,12 +81,7 @@ namespace MonitoringOlahraga
                     txtNama.Focus();
                     return;
                 }
-                if (string.IsNullOrEmpty(cmbRole.Text))
-                {
-                    MessageBox.Show("Role harus dipilih");
-                    cmbRole.Focus();
-                    return;
-                }
+                // Role logic removed for single user environment
 
                 SqlCommand cmd = new SqlCommand("sp_InsertUser", conn);
                 cmd.CommandType = CommandType.StoredProcedure;
